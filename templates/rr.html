@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+</head>
+<body>
+    <h1>Results</h1>
+    <table border="1">
+        <tr>
+            <th>Order of Execution</th>
+            <th>Arrival Time</th>
+            <th>Burst Time</th>
+            <th>Completion Time</th>
+            <th>Waiting Time</th>
+            <th>Turnaround Time</th>
+            <!-- <th>Response Time</th> -->
+        </tr>
+        {% for i in range(num_processes) %}
+        <tr>
+            <td>[{{ i+1 }}]</td>
+            <td>{{ at[i] }}</td>
+            <td>{{ bt[i] }}</td>
+            <td>{{ completion_times[i] }}</td>
+            <td>{{ waiting_times[i] }}</td>
+            <td>{{ turnaround_times[i] }}</td>
+        
+        </tr>
+        {% endfor %}
+    </table>
+    <p>Average Waiting Time: {{ avg_wt }}</p>
+    <p>Average Turnaround Time: {{ avg_tat }}</p>
+    <!-- <p>Average Response Time: {{ avg_rt }}</p> -->
+</body>
+</html>

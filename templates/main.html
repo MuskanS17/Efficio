@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OS Scheduler</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary-subtle sticky-top">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03"
+                aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand" href="#">Scheduling</a>
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="main.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Scheduling</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Cache</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Memory</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Developers</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="text-center bg-info">OS Scheduler</h2>
+        <form id="schedulerForm">
+            <div class="mb-3">
+                <label for="algorithm" class="form-label"><b>Select Scheduling Algorithm*</b></label>
+                <select class="form-select" id="algorithm">
+                    <option value="FCFS">First Come First Serve (FCFS)</option>
+                    <option value="SJF">Shortest Job First (SJF)</option>
+                    <option value="RR">Round Robin (RR)</option>
+                    <option value="SRTF">Shortest Remaining Time First (SRTF)</option>
+                    <option value="HRRN">Highest Response Ratio Next (HRRN)</option>
+                </select>
+            </div>
+
+            <h4 class="text-success"><u>Enter Process Details</u></h4>
+            <table class="table" id="processTable">
+                <thead>
+                    <tr>
+                        <th>Process No.</th>
+                        <th>Arrival Time</th>
+                        <th>Burst Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="number" class="form-control" name="processNo" value="1"></td>
+                        <td><input type="number" class="form-control" name="arrivalTime"></td>
+                        <td><input type="number" class="form-control" name="burstTime"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="number" class="form-control" name="processNo" value="2"></td>
+                        <td><input type="number" class="form-control" name="arrivalTime"></td>
+                        <td><input type="number" class="form-control" name="burstTime"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary" id="addRow">Add Process</button>
+            <button type="submit" class="btn btn-success ">Submit</button>
+        </form>
+
+        <h3 class="mt-5">Output</h3>
+        <table class="table" id="outputTable">
+            <thead>
+                <tr>
+                    <th>Process No</th>
+                    <th>Arrival Time</th>
+                    <th>Burst Time</th>
+                    <th>Completion Time</th>
+                    <th>Turnaround Time</th>
+                    <th>Waiting Time</th>
+                    <th>Response Time</th>
+                </tr>
+            </thead>
+            <tbody id="result"></tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('addRow').addEventListener('click', function () {
+            const table = document.getElementById('processTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+                <td><input type="number" class="form-control" name="processNo"></td>
+                <td><input type="number" class="form-control" name="arrivalTime"></td>
+                <td><input type="number" class="form-control" name="burstTime"></td>
+            `;
+        });
+
+        document.getElementById('schedulerForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const processes = [];
+            const rows = document.getElementById('processTable').getElementsByTagName('tbody')[0].rows;
+
+            for (let i = 0; i < rows.length; i++) {
+                const processNo = rows[i].cells[0].children[0].value;
+                const arrivalTime = rows[i].cells[1].children[0].value;
+                const burstTime = rows[i].cells[2].children[0].value;
+
+                processes.push({
+                    processNo: parseInt(processNo),
+                    arrivalTime: parseInt(arrivalTime),
+                    burstTime: parseInt(burstTime)
+                });
+            }
+
+            const algorithm = document.getElementById('algorithm').value;
+
+            fetch('/schedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ processes, algorithm })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    let resultHtml = '';
+                    data.forEach(row => {
+                        resultHtml += `
+                            <tr>
+                                <td>${row.processNo}</td>
+                                <td>${row.arrivalTime}</td>
+                                <td>${row.burstTime}</td>
+                                <td>${row.completionTime}</td>
+                                <td>${row.turnAroundTime}</td>
+                                <td>${row.waitingTime}</td>
+                                <td>${row.responseTime}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('result').innerHTML = resultHtml;
+                })
+                .catch(err => console.log(err));
+        });
+    </script>
+
+</body>
+
+</html>
